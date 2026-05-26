@@ -1,15 +1,9 @@
 {
-  "functions": {
-    "api/generate.js": { "maxDuration": 30 }
-  },
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src 'self'"
-        }
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
       ]
     }
   ]
