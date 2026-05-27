@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PBS COLOR LAB · SNS 생성기</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#fdf8fc;min-height:100vh;padding-bottom:60px;}
+input,textarea,button{font-family:inherit;}
+input:focus,textarea:focus{outline:none;border-color:#E91E8C!important;}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.header{background:#fff;border-bottom:1px solid #f0dcea;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.logo{width:34px;height:34px;background:#E91E8C;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-style:italic;font-weight:700;font-size:14px;flex-shrink:0;}
+.logo-text .t1{font-size:13px;font-weight:700;color:#1a1018;}
+.logo-text .t2{font-size:9px;color:#8a7080;letter-spacing:.06em;text-transform:uppercase;}
+.nav-btn{padding:7px 14px;border:2px solid #f0dcea;border-radius:50px;background:#fff;color:#4a3a45;cursor:pointer;font-size:12px;font-weight:700;}
+.nav-btn.on{background:#E91E8C;border-color:#E91E8C;color:#fff;}
+.main{max-width:820px;margin:0 auto;padding:20px 16px;}
+.card{background:#fff;border:1px solid #f0dcea;border-radius:16px;padding:20px 18px;margin-bottom:18px;box-shadow:0 2px 20px rgba(233,30,140,.06);}
+.slabel{font-size:11px;font-weight:700;color:#E91E8C;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;display:block;}
+textarea.kw{width:100%;border:1.5px solid #f0dcea;border-radius:10px;padding:11px 14px;font-size:15px;color:#1a1018;background:#fdf8fc;resize:vertical;margin-bottom:16px;display:block;min-height:56px;}
+.drop-zone{border:2px dashed #f0dcea;border-radius:12px;padding:16px;text-align:center;cursor:pointer;margin-bottom:10px;background:#fdf0f8;}
+.drop-zone:hover{border-color:#E91E8C;}
+.img-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.img-thumb{position:relative;}
+.img-thumb img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:2px solid #f0dcea;display:block;}
+.img-num{position:absolute;bottom:0;left:0;right:0;background:rgba(233,30,140,.8);color:#fff;font-size:10px;font-weight:700;text-align:center;border-radius:0 0 6px 6px;padding:2px 0;}
+.img-del{position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:#E91E8C;color:#fff;border:none;border-radius:50%;cursor:pointer;font-size:10px;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.ch-btn{padding:9px 16px;border:1.5px solid #f0dcea;border-radius:50px;background:#fff;color:#4a3a45;cursor:pointer;font-size:13px;font-weight:600;}
+.ch-btn.on{background:#E91E8C;border-color:#E91E8C;color:#fff;}
+.tone-btn{padding:7px 13px;border:1.5px solid #f0dcea;border-radius:50px;background:#fff;color:#8a7080;cursor:pointer;font-size:12px;}
+.tone-btn.on{background:#E91E8C;border-color:#E91E8C;color:#fff;font-weight:700;}
+.gen-btn{width:100%;padding:15px;background:#E91E8C;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.04em;}
+.gen-btn:disabled{background:#e0b8d3;cursor:not-allowed;}
+.gen-btn:not(:disabled):hover{background:#c91577;}
+.hint{text-align:center;font-size:11px;color:#c4a8bb;margin-top:7px;}
+.spinner-box{text-align:center;padding:40px;background:#fff;border-radius:16px;border:1px solid #f0dcea;}
+.spinner{width:36px;height:36px;border:3px solid #f9d6ec;border-top-color:#E91E8C;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+.result-card{background:#fff;border:1px solid #f0dcea;border-radius:16px;overflow:hidden;margin-bottom:16px;box-shadow:0 2px 16px rgba(233,30,140,.05);animation:fadeUp .4s ease;}
+.rcard-head{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid #f0dcea;background:#fdf0f8;}
+.rcard-head-left{display:flex;align-items:center;gap:7px;}
+.rlabel{font-size:11px;font-weight:700;color:#E91E8C;text-transform:uppercase;}
+.rpill{background:#E91E8C;color:#fff;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;}
+.rpill2{background:#e8f5e9;color:#2e7d32;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;}
+.cp-btn{padding:6px 12px;border:1.5px solid #f0dcea;border-radius:8px;background:#fff;color:#4a3a45;cursor:pointer;font-size:12px;font-weight:600;}
+.cp-btn.done{background:#16a34a;border-color:#16a34a;color:#fff;}
+.view-tabs{display:flex;gap:6px;padding:11px 18px;border-bottom:1px solid #f0dcea;flex-wrap:wrap;}
+.vtab{padding:7px 13px;border:1.5px solid #f0dcea;border-radius:50px;background:#fff;color:#8a7080;cursor:pointer;font-size:12px;}
+.vtab.on{background:#E91E8C;border-color:#E91E8C;color:#fff;font-weight:700;}
+.rcard-body{padding:20px;}
+.blog-preview{background:#fff;border:1px solid #f0dcea;border-radius:12px;overflow:hidden;}
+.blog-header{background:linear-gradient(135deg,#fdf0f8,#fff5fc);padding:18px 20px;border-bottom:1px solid #f0dcea;}
+.blog-title{font-size:19px;font-weight:700;color:#1a1018;line-height:1.5;margin:6px 0 8px;}
+.blog-hook{background:#fff8fd;border-left:4px solid #E91E8C;border-radius:0 10px 10px 0;padding:13px 16px;margin-bottom:18px;font-style:italic;font-size:15px;font-weight:600;color:#1a1018;line-height:1.8;white-space:pre-wrap;}
+.blog-content{font-size:14px;line-height:1.95;color:#4a3a45;white-space:pre-wrap;}
+.blog-h3{font-size:15px;font-weight:700;color:#E91E8C;margin:18px 0 8px;padding:7px 14px;background:#fdf0f8;border-radius:8px;border-left:3px solid #E91E8C;}
+.photo-ph{background:#fdf0f8;border:2px dashed #f0dcea;border-radius:12px;padding:24px;color:#E91E8C;font-size:13px;font-weight:600;text-align:center;margin:16px 0;}
+.photo-real{width:100%;max-width:500px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.1);display:block;margin:16px auto 8px;}
+.copy-big-btn{width:100%;margin-top:12px;padding:13px;background:#E91E8C;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:700;}
+.copy-big-btn.done{background:#16a34a;}
+.text-box{background:#fdf8fc;border:1px solid #f0dcea;border-radius:10px;padding:16px;font-size:13px;line-height:1.9;color:#4a3a45;white-space:pre-wrap;max-height:400px;overflow-y:auto;font-family:inherit;}
+.guide-step{display:flex;align-items:flex-start;gap:12px;padding:13px 15px;background:#fff8fd;border:1px solid #f0dcea;border-radius:12px;margin-bottom:10px;}
+.step-num{width:28px;height:28px;background:#E91E8C;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.step-text{font-size:13px;color:#4a3a45;padding-top:4px;}
+.photo-guide-item{background:#fff;border:1px solid #f0dcea;border-radius:12px;padding:13px 15px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;}
+.photo-badge{background:#E91E8C;color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;display:inline-block;margin-bottom:6px;}
+.insta-cap-box{background:linear-gradient(135deg,#fdf0f8,#fff5fc);border:1px solid #f0dcea;border-radius:12px;padding:15px;margin-bottom:12px;}
+.tag-box{display:flex;flex-wrap:wrap;gap:6px;}
+.tag{font-size:12px;color:#E91E8C;background:#fdf0f8;padding:4px 10px;border-radius:20px;font-weight:500;}
+.empty-box{text-align:center;padding:40px;background:#fff;border-radius:16px;border:1px solid #f0dcea;}
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.badge{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600;}
+/* Admin */
+.admin-banner{background:linear-gradient(135deg,#fff8fd,#fdf0f8);border:1px solid #f0dcea;border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:12px;}
+.tab-btn{padding:10px 18px;border:2px solid #f0dcea;border-radius:50px;background:#fff;color:#4a3a45;cursor:pointer;font-size:13px;font-weight:700;}
+.tab-btn.on{background:#E91E8C;border-color:#E91E8C;color:#fff;}
+.tag-chip{display:inline-flex;align-items:center;gap:6px;background:#fdf0f8;border:1.5px solid #f0dcea;color:#E91E8C;font-size:13px;font-weight:600;padding:6px 12px;border-radius:50px;margin:0 8px 8px 0;}
+.tag-x{width:17px;height:17px;background:#f9d6ec;border:none;border-radius:50%;cursor:pointer;font-size:10px;color:#E91E8C;}
+.person-card{background:#fff;border:1px solid #f0dcea;border-radius:12px;padding:15px 17px;margin-bottom:10px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.person-role{font-size:11px;background:#fdf0f8;color:#E91E8C;padding:2px 8px;border-radius:20px;font-weight:600;}
+.small-btn{padding:6px 11px;border:1.5px solid #f0dcea;border-radius:8px;background:#fff;color:#4a3a45;cursor:pointer;font-size:12px;}
+.del-btn{padding:6px 11px;border:1.5px solid #fee2e2;border-radius:8px;background:#fff;color:#dc2626;cursor:pointer;font-size:12px;}
+
+.apikey-banner{background:linear-gradient(135deg,#fff8fd,#fdf0f8);border:1px solid #f0dcea;border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.apikey-input{flex:1;min-width:200px;border:1.5px solid #f0dcea;border-radius:8px;padding:9px 13px;font-size:13px;color:#1a1018;background:#fdf8fc;font-family:inherit;}
+.apikey-btn{padding:9px 16px;background:#E91E8C;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;white-space:nowrap;}
+.apikey-ok{font-size:12px;color:#16a34a;font-weight:600;}
+
+.save-toast{color:#16a34a;font-weight:700;font-size:13px;margin-left:auto;}
+.input-field{width:100%;border:1.5px solid #f0dcea;border-radius:8px;padding:10px 13px;font-size:14px;color:#1a1018;background:#fdf8fc;display:block;margin-bottom:12px;}
+.inp-label{font-size:12px;font-weight:600;color:#8a7080;margin-bottom:5px;display:block;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="logo">P</div>
+    <div class="logo-text">
+      <div class="t1">PBS COLOR LAB · SNS 생성기</div>
+      <div class="t2">AI-Powered</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:6px">
+    <button class="nav-btn on" id="btn-main" onclick="showPage('main')">✨ 생성</button>
+    <button class="nav-btn" id="btn-admin" onclick="showPage('admin')">⚙️ 관리자</button>
+  </div>
+</div>
+
+<!-- MAIN PAGE -->
+<div id="page-main" class="main">
+
+  <!-- API 키 배너 -->
+  <div class="apikey-banner" id="apikey-banner">
+    <span style="font-size:18px;flex-shrink:0">🔑</span>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:13px;font-weight:700;color:#1a1018;margin-bottom:4px">Anthropic API 키 입력</div>
+      <div style="font-size:11px;color:#8a7080">console.anthropic.com에서 발급 · 브라우저에만 저장됩니다</div>
+    </div>
+    <input class="apikey-input" id="apikey-input" type="password" placeholder="sk-ant-api03-..." oninput="checkApiKey()">
+    <button class="apikey-btn" onclick="saveApiKey()">저장</button>
+    <span class="apikey-ok" id="apikey-ok" style="display:none">✅ 저장됨</span>
+  </div>
+
+  <div class="badge-row" id="badge-row"></div>
+
+  <div class="card">
+    <span class="slabel">① 주제 / 키워드</span>
+    <textarea class="kw" id="kw" placeholder="예) 가을 딥다크 퍼스널컬러 코디, 오행 목(木) 스타일링..." rows="2" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();generate();}"></textarea>
+
+    <span class="slabel">② 사진 첨부 <span style="color:#c4a8bb;font-weight:400;text-transform:none;letter-spacing:0;font-size:12px">(선택 · 최대 8장)</span></span>
+    <label class="drop-zone" style="display:block;cursor:pointer;position:relative;overflow:hidden;">
+      <div style="font-size:22px">📷</div>
+      <div style="font-size:13px;color:#8a7080;margin-top:4px">클릭하거나 드래그 · 최대 8장</div>
+      <input type="file" id="file-input" multiple accept="image/*"
+        style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0;"
+        onchange="handleFiles(this.files)">
+    </label>
+    <div class="img-grid" id="img-grid"></div>
+
+    <span class="slabel">③ 채널</span>
+    <div class="btn-row">
+      <button class="ch-btn on" id="ch-blog" onclick="toggleCh('blog')">📝 네이버 블로그</button>
+      <button class="ch-btn on" id="ch-insta" onclick="toggleCh('insta')">📸 인스타그램</button>
+    </div>
+
+    <span class="slabel">④ 말투</span>
+    <div class="btn-row" id="tone-row"></div>
+
+    <button class="gen-btn" id="gen-btn" onclick="generate()" disabled>✨ 콘텐츠 자동 생성하기</button>
+    <div class="hint" id="hint">키워드를 먼저 입력해주세요</div>
+  </div>
+
+  <div id="result-area"></div>
+</div>
+
+<!-- ADMIN PAGE -->
+<div id="page-admin" class="main" style="display:none">
+  <div class="admin-banner">
+    <span style="font-size:24px">⚙️</span>
+    <div>
+      <div style="font-size:14px;font-weight:700;color:#1a1018">관리자 설정</div>
+      <div style="font-size:12px;color:#8a7080">설정한 내용은 콘텐츠 생성 시 자동 반영돼요.</div>
+    </div>
+    <span class="save-toast" id="save-toast" style="display:none">✅ 저장됨</span>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
+    <button class="tab-btn on" id="atab-hashtag" onclick="showAdminTab('hashtag')"># 기본 해시태그</button>
+    <button class="tab-btn" id="atab-brand" onclick="showAdminTab('brand')">📋 브랜드 지침</button>
+    <button class="tab-btn" id="atab-persons" onclick="showAdminTab('persons')">👤 인물 등록</button>
+  </div>
+  <div id="admin-hashtag"><div class="card">
+    <div style="font-size:14px;font-weight:700;color:#1a1018;margin-bottom:4px">기본 해시태그</div>
+    <div style="font-size:13px;color:#8a7080;margin-bottom:18px">인스타그램 생성 시 항상 자동 포함되는 태그예요.</div>
+    <div style="display:flex;gap:8px;margin-bottom:18px">
+      <input id="tag-input" type="text" placeholder="#PBS컬러랩 또는 PBS컬러랩" style="flex:1;border:1.5px solid #f0dcea;border-radius:10px;padding:11px 14px;font-size:14px;color:#1a1018;background:#fdf8fc" onkeydown="if(event.key==='Enter')addTag()">
+      <button onclick="addTag()" style="padding:11px 20px;background:#E91E8C;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:700">추가</button>
+    </div>
+    <div id="tag-list"></div>
+    <div style="margin-top:14px;font-size:12px;color:#c4a8bb" id="tag-count"></div>
+  </div></div>
+  <div id="admin-brand" style="display:none"><div class="card">
+    <div style="font-size:14px;font-weight:700;color:#1a1018;margin-bottom:4px">브랜드 지침 / 콘텐츠 지시사항</div>
+    <div style="font-size:13px;color:#8a7080;margin-bottom:18px;line-height:1.65">AI가 글 쓸 때 항상 따르는 규칙이에요. 브랜드 톤, 금지 표현, 타깃 독자 등을 적어두세요.</div>
+    <textarea id="brand-guide" rows="10" style="width:100%;border:1.5px solid #f0dcea;border-radius:10px;padding:13px 15px;font-size:14px;color:#1a1018;background:#fdf8fc;resize:vertical;line-height:1.7" placeholder="예시:&#10;- 타깃: 30~50대 자기계발에 관심 있는 여성&#10;- 마무리는 PBS COLOR LAB 예약 안내로 연결&#10;- 금지: '간단히', '쉽게' 같은 가벼운 표현"></textarea>
+    <button onclick="saveBrand()" style="margin-top:12px;padding:12px 26px;background:#E91E8C;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:700">💾 저장하기</button>
+  </div></div>
+  <div id="admin-persons" style="display:none">
+    <div class="card">
+      <div style="font-size:14px;font-weight:700;color:#1a1018;margin-bottom:4px" id="person-form-title">새 인물 등록</div>
+      <div style="font-size:13px;color:#8a7080;margin-bottom:18px">등록하면 AI가 그 사람의 경험을 반영해요.</div>
+      <span class="inp-label">이름</span>
+      <input class="input-field" id="p-name" type="text" placeholder="예) 최해숙 대표">
+      <span class="inp-label">역할/직책</span>
+      <input class="input-field" id="p-role" type="text" placeholder="예) PBS COLOR LAB 대표·색채 전문가">
+      <span class="inp-label">소개 및 특징</span>
+      <textarea class="input-field" id="p-desc" rows="2" placeholder="예) 20년+ 컬러 전문가. 따뜻하고 신뢰감 있는 이미지."></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button onclick="savePerson()" id="person-save-btn" style="padding:11px 22px;background:#E91E8C;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:700">➕ 등록하기</button>
+        <button onclick="cancelPersonEdit()" id="person-cancel-btn" style="display:none;padding:11px 18px;background:#fff;border:1.5px solid #f0dcea;border-radius:10px;cursor:pointer;font-size:14px;color:#4a3a45">취소</button>
+      </div>
+    </div>
+    <div id="persons-list"></div>
+  </div>
+</div>
+
+<script>
+
+// ── API 키 관리 ──────────────────────────────
+function getApiKey() {
+  return localStorage.getItem('pbs_api_key') || '';
+}
+function saveApiKey() {
+  var k = document.getElementById('apikey-input').value.trim();
+  if (!k) return;
+  localStorage.setItem('pbs_api_key', k);
+  document.getElementById('apikey-ok').style.display = '';
+  document.getElementById('apikey-input').value = '••••••••••••••••';
+  setTimeout(function() {
+    document.getElementById('apikey-banner').style.display = 'none';
+  }, 1500);
+}
+function checkApiKey() {}
+function initApiKey() {
+  var k = getApiKey();
+  if (k) {
+    document.getElementById('apikey-banner').style.display = 'none';
+  }
+}
+
+// ── 상태 ──────────────────────────────────────
+var cfg = {
+  hashtags: ['#퍼스널컬러','#퍼스널컬러진단','#PBScolorlab','#컬러강점','#오행컬러','#색채심리','#퍼스널스타일링','#컬러컨설팅'],
+  brandGuide: '- PBS COLOR LAB은 색으로 나를 발견하는 여정을 제공합니다\n- 독자가 행동 욕구를 느끼도록 작성하세요\n- 마무리는 PBS COLOR LAB 진단 예약으로 연결하세요',
+  persons: [{name:'최해숙 대표', role:'PBS COLOR LAB 대표', desc:'20년+ 색채 교육·컨설팅 전문가. 따뜻하고 신뢰감 있는 이미지.'}]
+};
+var imgs = [];
+var blogOn = true, instaOn = true;
+var tone = 'warm';
+var editPersonIdx = null;
+var TONES = {
+  warm: '따뜻하고 친근한 언니 말투 — 자연스러운 구어체',
+  elegant: '세련되고 신뢰감 있는 전문가 말투',
+  friendly: '카톡 보내듯 편한 말투 — 구어체',
+  educational: '친절한 강사 말투 — 단계별 설명'
+};
+var TLABELS = {warm:'🌸 친근한 언니', elegant:'✨ 세련된 전문가', friendly:'💬 편한 친구', educational:'📚 친절한 강사'};
+
+// ── 초기화 ────────────────────────────────────
+async function init() {
+  initApiKey();
+  try {
+    var r = await window.storage.get('pbs_cfg3');
+    if (r && r.value) cfg = Object.assign({}, cfg, JSON.parse(r.value));
+  } catch(e) {}
+  renderTones();
+  renderBadges();
+  renderTagList();
+  renderPersonsList();
+  document.getElementById('brand-guide').value = cfg.brandGuide || '';
+}
+
+async function saveCfg() {
+  try { await window.storage.set('pbs_cfg3', JSON.stringify(cfg)); } catch(e) {}
+  showToast();
+  renderBadges();
+}
+
+function showToast() {
+  var t = document.getElementById('save-toast');
+  t.style.display = 'block';
+  setTimeout(function() { t.style.display = 'none'; }, 2000);
+}
+
+// ── 페이지 전환 ───────────────────────────────
+function showPage(p) {
+  document.getElementById('page-main').style.display = p === 'main' ? '' : 'none';
+  document.getElementById('page-admin').style.display = p === 'admin' ? '' : 'none';
+  document.getElementById('btn-main').className = 'nav-btn' + (p === 'main' ? ' on' : '');
+  document.getElementById('btn-admin').className = 'nav-btn' + (p === 'admin' ? ' on' : '');
+}
+
+function showAdminTab(t) {
+  ['hashtag','brand','persons'].forEach(function(k) {
+    document.getElementById('admin-' + k).style.display = k === t ? '' : 'none';
+    document.getElementById('atab-' + k).className = 'tab-btn' + (k === t ? ' on' : '');
+  });
+}
+
+// ── 뱃지 ──────────────────────────────────────
+function renderBadges() {
+  var r = document.getElementById('badge-row');
+  r.innerHTML = '';
+  if (cfg.hashtags && cfg.hashtags.length > 0) r.innerHTML += '<span class="badge" style="background:#e8f5e9;color:#2e7d32">기본 해시태그 ' + cfg.hashtags.length + '개</span>';
+  if (cfg.brandGuide) r.innerHTML += '<span class="badge" style="background:#e3f2fd;color:#1565c0">브랜드 지침 적용중</span>';
+  if (cfg.persons && cfg.persons.length > 0) r.innerHTML += '<span class="badge" style="background:#fce4ec;color:#880e4f">인물 ' + cfg.persons.length + '명</span>';
+}
+
+// ── 말투 ──────────────────────────────────────
+function renderTones() {
+  var r = document.getElementById('tone-row');
+  r.innerHTML = '';
+  Object.keys(TLABELS).forEach(function(k) {
+    var b = document.createElement('button');
+    b.className = 'tone-btn' + (k === tone ? ' on' : '');
+    b.textContent = TLABELS[k];
+    b.onclick = function() { tone = k; renderTones(); };
+    r.appendChild(b);
+  });
+}
+
+// ── 채널 토글 ─────────────────────────────────
+function toggleCh(ch) {
+  if (ch === 'blog') { if (instaOn) { blogOn = !blogOn; document.getElementById('ch-blog').className = 'ch-btn' + (blogOn ? ' on' : ''); } }
+  else { if (blogOn) { instaOn = !instaOn; document.getElementById('ch-insta').className = 'ch-btn' + (instaOn ? ' on' : ''); } }
+}
+
+// ── 키워드 입력 감지 ─────────────────────────
+document.getElementById('kw').addEventListener('input', function() {
+  var has = this.value.trim().length > 0;
+  document.getElementById('gen-btn').disabled = !has;
+  document.getElementById('hint').style.display = has ? 'none' : '';
+});
+
+// ── 이미지 처리 ───────────────────────────────
+function handleFiles(files) {
+  var todo = Array.from(files).filter(function(f) { return f.type.startsWith('image/'); }).slice(0, 8 - imgs.length);
+  var done = 0;
+  todo.forEach(function(f) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      imgs.push({ du: e.target.result, b64: e.target.result.split(',')[1], mime: f.type });
+      done++;
+      if (done === todo.length) renderImgs();
+    };
+    reader.readAsDataURL(f);
+  });
+}
+
+function removeImg(i) {
+  imgs.splice(i, 1);
+  renderImgs();
+}
+
+function renderImgs() {
+  var g = document.getElementById('img-grid');
+  g.innerHTML = '';
+  imgs.forEach(function(imgData, i) {
+    var d = document.createElement('div');
+    d.className = 'img-thumb';
+    var im = document.createElement('img');
+    im.src = imgData.du;
+    im.style.cssText = 'width:64px;height:64px;object-fit:cover;border-radius:8px;border:2px solid #f0dcea;display:block;';
+    var nd = document.createElement('div');
+    nd.className = 'img-num';
+    nd.textContent = '사진' + (i+1);
+    var btn = document.createElement('button');
+    btn.className = 'img-del';
+    btn.textContent = 'x';
+    btn.setAttribute('data-idx', i);
+    btn.onclick = function() { removeImg(parseInt(this.getAttribute('data-idx'))); };
+    d.appendChild(im); d.appendChild(nd); d.appendChild(btn);
+    g.appendChild(d);
+  });
+}
+
+// ── 생성 ──────────────────────────────────────
+async function generate() {
+  var kw = document.getElementById('kw').value.trim();
+  if (!kw) return;
+  document.getElementById('result-area').innerHTML = '<div class="spinner-box"><div class="spinner"></div><div style="font-size:14px;color:#8a7080">블로그 글 작성 중...</div></div>';
+  document.getElementById('gen-btn').disabled = true;
+  document.getElementById('gen-btn').textContent = '생성 중...';
+
+  var hasI = imgs.length > 0;
+  var td = TONES[tone];
+  var pc = cfg.persons && cfg.persons.length > 0 ? '\n인물: ' + cfg.persons.map(function(p) { return p.name + '(' + p.role + '): ' + p.desc; }).join('; ') : '';
+  var bc = cfg.brandGuide ? '\n[브랜드 지침]\n' + cfg.brandGuide : '';
+  var pi = hasI ? '\n사진 ' + imgs.length + '장 첨부. 어울리는 위치에 [사진1], [사진2] 형식으로 배치 표시하세요.' : '';
+  var tags = (cfg.hashtags || []).join(' ');
+
+  var bp = '당신은 네이버 블로그 퍼스널컬러 전문 블로거입니다.' + pc + bc + '\n주제: "' + kw + '" 말투: ' + td + pi + '\n제목은 SEO 최적화, 후킹은 공감형, 본론은 별표소제목 3~4개, 분량 900~1100자, 마무리는 PBS COLOR LAB CTA.\n\n[BLOG_TITLE]\n제목\n[BLOG_HOOK]\n후킹 오프닝\n[BLOG_BODY]\n본론+마무리';
+  var ip = 'PBS COLOR LAB 인스타그램 전문가입니다.' + pc + bc + '\n주제: "' + kw + '" 말투: ' + td + '\n첫줄 이모지+후킹, 3~5줄 핵심, CTA 마무리.\n기본태그: ' + tags + ' 포함 총 22~25개\n\n[INSTA_CAPTION]\n캡션\n[INSTA_HASHTAGS]\n해시태그';
+
+  var prompt = (blogOn ? bp : '') + (blogOn && instaOn ? '\n\n' : '') + (instaOn ? ip : '');
+  var parts = [{type:'text', text:prompt}];
+  if (hasI) imgs.forEach(function(img) { parts.push({type:'image', source:{type:'base64', media_type:img.mime, data:img.b64}}); });
+
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'x-api-key': getApiKey(), 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'},
+      body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:1800, messages:[{role:'user', content:parts}]})
+    });
+    var data = await res.json();
+    if (!res.ok || data.error) {
+      var em = data.error ? (data.error.message || JSON.stringify(data.error)) : ('HTTP ' + res.status);
+      if (res.status === 401 || (em && em.toLowerCase().includes('api'))) {
+        document.getElementById('apikey-banner').style.display = '';
+throw new Error('API 키가 없거나 만료됐어요. 위에서 API 키를 다시 입력해주세요.');
+      }
+      throw new Error('서버 오류: ' + em);
+    }
+    if (!data.content || !data.content[0]) {
+      throw new Error('응답 오류 - API 키를 확인해주세요: ' + JSON.stringify(data).slice(0,200));
+    }
+    var txt = data.content[0].text;
+    function g(re) { var m = txt.match(re); return m ? m[1].trim() : ''; }
+    var result = {
+      blogTitle: g(/\[BLOG_TITLE\]([\s\S]*?)(?=\[BLOG_HOOK\])/),
+      blogHook:  g(/\[BLOG_HOOK\]([\s\S]*?)(?=\[BLOG_BODY\])/),
+      blogBody:  g(/\[BLOG_BODY\]([\s\S]*?)(?=\[INSTA_CAPTION\]|$)/),
+      instaCaption:  g(/\[INSTA_CAPTION\]([\s\S]*?)(?=\[INSTA_HASHTAGS\])/),
+      instaHashtags: g(/\[INSTA_HASHTAGS\]([\s\S]*?)$/)
+    };
+    renderResult(result);
+  } catch(e) {
+    document.getElementById('result-area').innerHTML = '<div style="padding:20px;color:#c91577;font-size:13px;background:#fff0f8;border-radius:12px;border:1px solid #f0dcea;text-align:center">오류가 발생했어요. 다시 시도해주세요.<br><small>' + e.message + '</small></div>';
+  }
+  document.getElementById('gen-btn').disabled = false;
+  document.getElementById('gen-btn').textContent = '✨ 콘텐츠 다시 생성하기';
+}
+
+// ── 결과 렌더링 ───────────────────────────────
+function buildCopy(r) {
+  var t = r.blogTitle + '\n\n' + r.blogHook + '\n\n' + r.blogBody;
+  return t.replace(/\[사진(\d+)\]([^\n]*)/g, function(_, n, c) {
+    return '\n📷 --- 사진 ' + n + '번 여기에 삽입' + (c.trim() ? ' (' + c.trim() + ')' : '') + ' ---\n';
+  });
+}
+
+function renderBlogBody(body) {
+  var parts = body.split(/(\[사진\d+\][^\n]*)/);
+  var html = '';
+  parts.forEach(function(part) {
+    var m = part.match(/^\[사진(\d+)\](.*)/);
+    if (m) {
+      var num = parseInt(m[1]) - 1;
+      var cap = m[2].trim();
+      if (imgs[num]) {
+        html += '<img class="photo-real" src="' + imgs[num].du + '">';
+        if (cap) html += '<p style="font-size:12px;color:#8a7080;text-align:center;font-style:italic;margin-bottom:8px">' + esc(cap) + '</p>';
+      } else {
+        html += '<div class="photo-ph">📷 사진 ' + (num+1) + '번 위치' + (cap ? ' · ' + esc(cap) : '') + '</div>';
+      }
+    } else {
+      part.split('\n').forEach(function(line) {
+        if (line.startsWith('★')) {
+          html += '<div class="blog-h3">' + esc(line) + '</div>';
+        } else if (line.trim() === '') {
+          html += '<div style="height:8px"></div>';
+        } else {
+          html += '<p style="font-size:14px;line-height:1.95;color:#4a3a45;margin:0 0 4px">' + esc(line) + '</p>';
+        }
+      });
+    }
+  });
+  return html;
+}
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderResult(r) {
+  var html = '';
+
+  if (blogOn && r.blogBody) {
+    var copyTxt = buildCopy(r);
+    html += '<div class="result-card">';
+    html += '<div class="rcard-head"><div class="rcard-head-left"><span class="rlabel">블로그</span><span class="rpill">네이버</span>' + (imgs.length > 0 ? '<span class="rpill2">사진 ' + imgs.length + '장 배치</span>' : '') + '</div><button class="cp-btn" id="cp-blog" onclick="cpText(\'cp-blog\',\'' + encodeURIComponent(copyTxt) + '\')">📋 복사</button></div>';
+    html += '<div class="view-tabs"><button class="vtab on" onclick="showView(\'preview\')">미리보기</button>' + (imgs.length > 0 ? '<button class="vtab" onclick="showView(\'guide\')">업로드 가이드</button>' : '') + '<button class="vtab" onclick="showView(\'text\')">텍스트 복사용</button></div>';
+
+    // 미리보기
+    html += '<div id="view-preview" class="rcard-body"><div class="blog-preview"><div class="blog-header"><div style="font-size:11px;color:#E91E8C;font-weight:600;margin-bottom:6px">PBS COLOR LAB</div><div class="blog-title">' + esc(r.blogTitle) + '</div></div><div style="padding:20px">' + (r.blogHook ? '<div class="blog-hook">' + esc(r.blogHook) + '</div>' : '') + renderBlogBody(r.blogBody) + '</div></div><button class="copy-big-btn" id="cp-blog2" onclick="cpText(\'cp-blog2\',\'' + encodeURIComponent(copyTxt) + '\')">네이버 블로그용 텍스트 복사하기</button></div>';
+
+    // 가이드
+    var guideHtml = '<div id="view-guide" class="rcard-body" style="display:none"><div style="font-size:14px;font-weight:700;color:#1a1018;margin-bottom:14px">네이버 블로그 업로드 순서</div>';
+    ['텍스트 복사용 탭에서 복사 → 네이버 블로그 에디터에 붙여넣기','📷 --- 사진 N번 --- 위치에 사진 삽입','안내 문구 삭제 후 발행'].forEach(function(s, i) {
+      guideHtml += '<div class="guide-step"><div class="step-num">' + (i+1) + '</div><div class="step-text">' + s + '</div></div>';
+    });
+    imgs.forEach(function(img, i) {
+      guideHtml += '<div class="photo-guide-item"><img src="' + img.du + '" style="width:68px;height:68px;object-fit:cover;border-radius:8px;border:2px solid #f0dcea;flex-shrink:0"><div><span class="photo-badge">사진 ' + (i+1) + '번</span><div style="font-size:13px;color:#4a3a45">📷 --- 사진 ' + (i+1) + '번 여기에 삽입 --- 위치에 올려주세요.</div></div></div>';
+    });
+    guideHtml += '</div>';
+    html += guideHtml;
+
+    // 텍스트
+    html += '<div id="view-text" class="rcard-body" style="display:none">' + (imgs.length > 0 ? '<div style="font-size:13px;color:#E91E8C;font-weight:600;margin-bottom:10px">📷 --- 사진 N번 --- 표시 위치에 사진을 넣어주세요.</div>' : '') + '<div class="text-box">' + esc(copyTxt) + '</div><button class="copy-big-btn" id="cp-blog3" onclick="cpText(\'cp-blog3\',\'' + encodeURIComponent(copyTxt) + '\')" style="margin-top:12px">전체 복사하기</button></div>';
+
+    html += '</div>';
+  }
+
+  if (instaOn && r.instaCaption) {
+    var instaCopy = r.instaCaption + '\n\n' + r.instaHashtags;
+    var tags = r.instaHashtags.split(/\s+/).filter(function(t) { return t.startsWith('#'); });
+    html += '<div class="result-card"><div class="rcard-head"><div class="rcard-head-left"><span class="rlabel">인스타그램</span><span class="rpill">Instagram</span></div><button class="cp-btn" id="cp-insta" onclick="cpText(\'cp-insta\',\'' + encodeURIComponent(instaCopy) + '\')">📋 복사</button></div>';
+    html += '<div class="rcard-body"><div class="insta-cap-box"><div style="font-size:10px;font-weight:700;color:#8a7080;text-transform:uppercase;margin-bottom:7px">캡션</div><div style="font-size:14px;line-height:1.85;color:#4a3a45;white-space:pre-wrap">' + esc(r.instaCaption) + '</div></div>';
+    html += '<div style="font-size:10px;font-weight:700;color:#8a7080;text-transform:uppercase;margin-bottom:9px">해시태그</div><div class="tag-box">' + tags.map(function(t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('') + '</div></div></div>';
+  }
+
+  if (!html) html = '<div class="empty-box"><div style="font-size:14px;color:#8a7080">결과가 없어요. 다시 시도해주세요.</div></div>';
+  document.getElementById('result-area').innerHTML = html;
+}
+
+function showView(v) {
+  ['preview','guide','text'].forEach(function(k) {
+    var el = document.getElementById('view-' + k);
+    if (el) el.style.display = k === v ? '' : 'none';
+  });
+  document.querySelectorAll('.vtab').forEach(function(b, i) {
+    b.className = 'vtab' + (b.textContent.toLowerCase().includes(v.substr(0,2)) ? ' on' : '');
+  });
+}
+
+function cpText(btnId, encoded) {
+  var text = decodeURIComponent(encoded);
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.getElementById(btnId);
+    if (btn) { btn.classList.add('done'); btn.textContent = '✅ 복사 완료!'; setTimeout(function() { btn.classList.remove('done'); btn.textContent = btnId.includes('blog') ? (btnId === 'cp-blog' ? '📋 복사' : '네이버 블로그용 텍스트 복사하기') : '📋 복사'; }, 2500); }
+  });
+}
+
+// ── 해시태그 관리 ─────────────────────────────
+function addTag() {
+  var inp = document.getElementById('tag-input');
+  var t = inp.value.trim();
+  if (!t) return;
+  var tag = t.startsWith('#') ? t : '#' + t;
+  if (!cfg.hashtags.includes(tag)) { cfg.hashtags.push(tag); saveCfg(); renderTagList(); }
+  inp.value = '';
+}
+function removeTag(i) { cfg.hashtags.splice(i, 1); saveCfg(); renderTagList(); }
+function renderTagList() {
+  var r = document.getElementById('tag-list');
+  r.innerHTML = cfg.hashtags.length === 0 ? '<div style="text-align:center;padding:28px;color:#c4a8bb;font-size:13px">등록된 해시태그가 없어요</div>' : cfg.hashtags.map(function(t, i) { return '<span class="tag-chip">' + esc(t) + '<button class="tag-x" onclick="removeTag(' + i + ')">x</button></span>'; }).join('');
+  document.getElementById('tag-count').textContent = '현재 ' + cfg.hashtags.length + '개 등록됨';
+}
+
+// ── 브랜드 지침 ───────────────────────────────
+function saveBrand() { cfg.brandGuide = document.getElementById('brand-guide').value; saveCfg(); }
+
+// ── 인물 관리 ─────────────────────────────────
+function savePerson() {
+  var name = document.getElementById('p-name').value.trim();
+  if (!name) return;
+  var p = { name: name, role: document.getElementById('p-role').value.trim(), desc: document.getElementById('p-desc').value.trim() };
+  if (editPersonIdx !== null) { cfg.persons[editPersonIdx] = p; } else { cfg.persons.push(p); }
+  saveCfg(); renderPersonsList(); cancelPersonEdit();
+}
+function editPerson(i) {
+  editPersonIdx = i;
+  var p = cfg.persons[i];
+  document.getElementById('p-name').value = p.name;
+  document.getElementById('p-role').value = p.role;
+  document.getElementById('p-desc').value = p.desc;
+  document.getElementById('person-form-title').textContent = '인물 수정';
+  document.getElementById('person-save-btn').textContent = '✏️ 수정 완료';
+  document.getElementById('person-cancel-btn').style.display = '';
+}
+function cancelPersonEdit() {
+  editPersonIdx = null;
+  document.getElementById('p-name').value = '';
+  document.getElementById('p-role').value = '';
+  document.getElementById('p-desc').value = '';
+  document.getElementById('person-form-title').textContent = '새 인물 등록';
+  document.getElementById('person-save-btn').textContent = '➕ 등록하기';
+  document.getElementById('person-cancel-btn').style.display = 'none';
+}
+function removePerson(i) { cfg.persons.splice(i, 1); saveCfg(); renderPersonsList(); }
+function renderPersonsList() {
+  var r = document.getElementById('persons-list');
+  if (cfg.persons.length === 0) { r.innerHTML = '<div style="text-align:center;padding:28px;background:#fff;border-radius:16px;border:1px solid #f0dcea;color:#c4a8bb;font-size:13px">등록된 인물이 없어요</div>'; return; }
+  r.innerHTML = cfg.persons.map(function(p, i) {
+    return '<div class="person-card"><div><div style="display:flex;align-items:center;gap:7px;margin-bottom:5px"><span style="font-size:15px;font-weight:700;color:#1a1018">' + esc(p.name) + '</span><span class="person-role">' + esc(p.role) + '</span></div><div style="font-size:13px;color:#8a7080">' + esc(p.desc) + '</div></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="small-btn" onclick="editPerson(' + i + ')">수정</button><button class="del-btn" onclick="removePerson(' + i + ')">삭제</button></div></div>';
+  }).join('');
+}
+
+init();
+</script>
+</body>
+</html>
